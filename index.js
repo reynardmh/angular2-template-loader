@@ -1,5 +1,6 @@
 
 var loaderUtils = require("loader-utils");
+var path = require('path');
 
 // using: regex, capture groups, and capture group variables.
 var templateUrlRegex = /templateUrl\s*:(\s*['"`](.*?)['"`]\s*([,}]))/gm;
@@ -8,7 +9,11 @@ var stringRegex = /(['`"])((?:[^\\]\\\1|.)*?)\1/g;
 
 function replaceStringsWithRequires(string) {
   return string.replace(stringRegex, function (match, quote, url) {
-    if (url.charAt(0) !== ".") {
+    if (!process.env['APP_ROOT']) process.env['APP_ROOT'] = process.cwd();
+    if (url.match(/^\/?app/) && process.env['APP_ROOT']) {
+      url = path.normalize(process.env['APP_ROOT'] + '/src/' + url);
+      console.log(url);
+    } else if (url.charAt(0) !== ".") {
       url = "./" + url;
     }
     return "require('" + url + "')";
